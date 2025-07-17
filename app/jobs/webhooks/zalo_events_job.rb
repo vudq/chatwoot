@@ -6,9 +6,11 @@ class Webhooks::ZaloEventsJob < ApplicationJob
 
   def perform(params = {}, signature: '', post_body: '')
     return unless SUPPORTED_EVENTS.include?(params[:event_name])
+
     return unless validate_signature(params, post_body, signature)
 
     oa_id = delivery_event?(params) ? params[:sender][:id] : params[:recipient][:id]
+
     channel = Channel::ZaloOa.find_by(oa_id: oa_id)
     return unless channel
 

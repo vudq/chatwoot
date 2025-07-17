@@ -1,6 +1,8 @@
 <script>
 /* eslint-env browser */
+import { useVuelidate } from '@vuelidate/core';
 import { required } from '@vuelidate/validators';
+import { useAccount } from 'dashboard/composables/useAccount';
 import LoadingState from 'dashboard/components/widgets/LoadingState.vue';
 import { mapGetters } from 'vuex';
 import axios from 'axios';
@@ -14,6 +16,13 @@ export default {
     PageHeader,
   },
   mixins: [globalConfigMixin, accountMixin],
+  setup() {
+    const { accountId } = useAccount();
+    return {
+      accountId,
+      v$: useVuelidate(),
+    };
+  },
   data() {
     return {
       isCreating: false,
@@ -52,7 +61,7 @@ export default {
     startLogin() {
       this.hasLoginStarted = true;
       window.location.replace(
-        'https://oauth.zaloapp.com/v4/oa/permission?app_id=1705469258416327647&redirect_uri=' +
+        'https://oauth.zaloapp.com/v4/oa/permission?app_id=1130142644170054749&redirect_uri=' +
           window.chatwootConfig.hostURL +
           '/zalo/callback&state=' +
           encodeURIComponent(this.accountId)
@@ -125,8 +134,8 @@ export default {
       };
     },
     createChannel() {
-      this.$v.$touch();
-      if (!this.$v.$error) {
+      this.v$.$touch();
+      if (!this.v$.$error) {
         this.emptyStateMessage = this.$t('INBOX_MGMT.DETAILS.CREATING_CHANNEL');
         this.isCreating = true;
         this.$store
@@ -191,15 +200,15 @@ export default {
         </div>
         <div class="w-[60%]">
           <div class="w-full">
-            <label :class="{ error: $v.pageName.$error }">
+            <label :class="{ error: v$.pageName.$error }">
               {{ $t('INBOX_MGMT.ADD.ZALO.INBOX_NAME') }}
               <input
                 v-model.trim="pageName"
                 type="text"
                 :placeholder="$t('INBOX_MGMT.ADD.ZALO.PICK_NAME')"
-                @input="$v.pageName.$touch"
+                @input="v$.pageName.$touch"
               />
-              <span v-if="$v.pageName.$error" class="message">
+              <span v-if="v$.pageName.$error" class="message">
                 {{ $t('INBOX_MGMT.ADD.ZALO.ADD_NAME') }}
               </span>
             </label>
