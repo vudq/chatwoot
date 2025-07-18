@@ -3,5 +3,5 @@ class Webhooks::FacebookCommentsJob < MutexApplicationJob
   retry_on LockAcquisitionError, wait: 1.second, attempts: 8
 
   def perform(feed_event)
-    puts "Processing Facebook comment event: #{feed_event}"
+    Rails.logger.info "Processing Facebook comment event: #{feed_event}"
   end
