@@ -5,3 +5,4 @@ class Webhooks::FacebookCommentsJob < MutexApplicationJob
   def perform(feed_event)
     Rails.logger.info "Processing Facebook comment event: #{feed_event}"
   end
+end
