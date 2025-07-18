@@ -97,7 +97,7 @@ class Zalo::IncomingMessageService
   def set_contact
     contact_inbox = ::ContactInboxWithContactBuilder.new(
       source_id: params[:sender][:id],
-      inbox: @inbox,
+      inbox: inbox,
       contact_attributes: contact_attributes
     ).perform
 
