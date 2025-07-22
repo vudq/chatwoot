@@ -5,6 +5,8 @@ class Webhooks::FacebookCommentsJob < MutexApplicationJob
   def perform(message)
     response = ::Integrations::Facebook::CommentParser.new(message)
 
+    return unless response.verb == 'add'
+
     key = format(::Redis::Alfred::FACEBOOK_COMMENT_MUTEX, user_id: response.customer_id, post_id: response.post_id)
     with_lock(key) do
       process_message(response)
