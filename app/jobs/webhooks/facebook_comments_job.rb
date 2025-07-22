@@ -2,7 +2,16 @@ class Webhooks::FacebookCommentsJob < MutexApplicationJob
   queue_as :default
   retry_on LockAcquisitionError, wait: 1.second, attempts: 8
 
-  def perform(feed_event)
-    Rails.logger.info "Processing Facebook comment event: #{feed_event}"
+  def perform(message)
+    response = ::Integrations::Facebook::CommentParser.new(message)
+
+    key = format(::Redis::Alfred::FACEBOOK_COMMENT_MUTEX, user_id: response.customer_id, post_id: response.post_id)
+    with_lock(key) do
+      process_message(response)
+    end
+  end
+
+  def process_message(response)
+    ::Integrations::Facebook::CommentCreator.new(response).perform
   end
 end

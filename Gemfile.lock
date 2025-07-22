@@ -22,6 +22,15 @@ GIT
       devise (>= 4.0.0, < 5.0.0)
       railties (>= 5.0.0, < 8.0.0)
 
+GIT
+  remote: https://github.com/jgorset/facebook-messenger.git
+  revision: 10d45342ee171fc76862a5cd6566b4c905945d5d
+  branch: master
+  specs:
+    facebook-messenger (2.1.2)
+      httparty (~> 0.13, >= 0.13.7)
+      rack (>= 1.4.5)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -237,9 +246,6 @@ GEM
       tzinfo
     event_stream_parser (1.0.0)
     execjs (2.8.1)
-    facebook-messenger (2.0.1)
-      httparty (~> 0.13, >= 0.13.7)
-      rack (>= 1.4.5)
     factory_bot (6.4.5)
       activesupport (>= 5.0.0)
     factory_bot_rails (6.4.3)
@@ -924,7 +930,7 @@ DEPENDENCIES
   down
   elastic-apm
   email_reply_trimmer
-  facebook-messenger
+  facebook-messenger!
   factory_bot_rails (>= 6.4.3)
   faker
   fcm
