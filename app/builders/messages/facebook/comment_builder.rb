@@ -14,10 +14,8 @@ class Messages::Facebook::CommentBuilder < Messages::Messenger::MessageBuilder
   def perform
     return if @inbox.channel.reauthorization_required?
 
-    puts "Fmessage for response: #{@response.to_json}"
     ActiveRecord::Base.transaction do
       build_contact_inbox
-      puts 'build contact inbox done'
       build_message
     end
   rescue Koala::Facebook::AuthenticationError => e
@@ -41,7 +39,6 @@ class Messages::Facebook::CommentBuilder < Messages::Messenger::MessageBuilder
 
   def build_message
     existing_message = conversation.messages.find_by(source_id: response.comment_id)
-    puts "Existing message found: #{existing_message.present?}" if existing_message
     return if existing_message.present?
 
     @message = conversation.messages.create!(message_params)
