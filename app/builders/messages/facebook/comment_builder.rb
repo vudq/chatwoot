@@ -14,8 +14,10 @@ class Messages::Facebook::CommentBuilder < Messages::Messenger::MessageBuilder
   def perform
     return if @inbox.channel.reauthorization_required?
 
+    puts "Fmessage for response: #{@response.to_json}"
     ActiveRecord::Base.transaction do
       build_contact_inbox
+      puts 'build contact inbox done'
       build_message
     end
   rescue Koala::Facebook::AuthenticationError => e
@@ -38,6 +40,10 @@ class Messages::Facebook::CommentBuilder < Messages::Messenger::MessageBuilder
   end
 
   def build_message
+    existing_message = conversation.messages.find_by(source_id: response.comment_id)
+    puts "Existing message found: #{existing_message.present?}" if existing_message
+    return if existing_message.present?
+
     @message = conversation.messages.create!(message_params)
 
     @attachments.each do |attachment|
@@ -96,7 +102,7 @@ class Messages::Facebook::CommentBuilder < Messages::Messenger::MessageBuilder
       additional_attributes: {
         type: 'facebook_comment',
         post_id: response.post_id,
-        post_permalink_url: response.post_permalink_url
+        comment_id: response.identifier
       }
     }
   end
@@ -107,7 +113,7 @@ class Messages::Facebook::CommentBuilder < Messages::Messenger::MessageBuilder
       inbox_id: conversation.inbox_id,
       message_type: @message_type,
       content: response.content,
-      source_id: response.identifier,
+      source_id: response.comment_id,
       content_attributes: {
         customer_id: response.customer_id
       },
