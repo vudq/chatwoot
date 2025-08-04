@@ -29,6 +29,10 @@ class Messages::Facebook::CommentBuilder < Messages::Messenger::MessageBuilder
 
   private
 
+  def graph_api
+    @graph_api ||= Koala::Facebook::API.new(@inbox.channel.page_access_token)
+  end
+
   def build_contact_inbox
     @contact_inbox = ::ContactInboxWithContactBuilder.new(
       source_id: @sender_id,
@@ -68,9 +72,38 @@ class Messages::Facebook::CommentBuilder < Messages::Messenger::MessageBuilder
   end
 
   def build_conversation
-    Conversation.create!(conversation_params.merge(
-                           contact_inbox_id: @contact_inbox.id
-                         ))
+    conversation = Conversation.create!(conversation_params.merge(
+                                          contact_inbox_id: @contact_inbox.id
+                                        ))
+    add_post_content_as_private_note(conversation)
+
+    conversation
+  end
+
+  def add_post_content_as_private_note(conversation)
+    post_content = fetch_facebook_post_content
+    return if post_content.blank?
+
+    conversation.messages.create!(
+      account_id: conversation.account_id,
+      inbox_id: conversation.inbox_id,
+      message_type: :activity,
+      private: true,
+      content: post_content,
+      sender: nil,
+      source_id: 'facebook_post_content'
+    )
+  rescue StandardError => e
+    # Ghi log lỗi nếu có sự cố xảy ra để không làm dừng toàn bộ quá trình
+    Rails.logger.error "Facebook Comment Builder: Could not create private note for post #{response.post_id}. Error: #{e.message}"
+  end
+
+  def fetch_facebook_post_content
+    post_data = graph_api.get_object(response.post_id, fields: 'message')
+    post_data['message']
+  rescue Koala::Facebook::APIError => e
+    Rails.logger.error "Facebook API Error: Could not fetch post content for #{response.post_id}. Error: #{e.message}"
+    nil
   end
 
   def location_params(attachment)
